@@ -260,27 +260,26 @@ public class AutoTreeChop extends JavaPlugin implements Listener, CommandExecuto
         Player player = event.getPlayer();
         UUID playerUUID = player.getUniqueId();
         PlayerConfig playerConfig = getPlayerConfig(playerUUID);
-        Block block = event.getBlock();
-        ItemStack tool = player.getInventory().getItemInMainHand();
-
-        // Skip if this block is already being processed
-        if (processingLocations.contains(block.getLocation())) {
+        if (!playerConfig.isAutoTreeChopEnabled()) {
             return;
         }
 
-        if (cooldownManager.isInCooldown(playerUUID)) {
-            sendMessage(player, STILL_IN_COOLDOWN_MESSAGE
-                    .insertNumber("cooldown_time", cooldownManager.getRemainingCooldown(playerUUID))
-            );
+        // Skip if this block is already being processed
+        Block block = event.getBlock();        
+        if (processingLocations.contains(block.getLocation())) {
+            return;
+        } else if (cooldownManager.isInCooldown(playerUUID)) {
+            sendMessage(player, STILL_IN_COOLDOWN_MESSAGE.insertNumber("cooldown_time", cooldownManager.getRemainingCooldown(playerUUID)));
             event.setCancelled(true);
             return;
         }
-
+        
+        ItemStack tool = player.getInventory().getItemInMainHand();
         Material material = block.getType();
         Location location = block.getLocation();
         BlockData blockData = block.getBlockData();
 
-        if (playerConfig.isAutoTreeChopEnabled() && TreeChopUtils.isLog(material, config)) {
+        if (TreeChopUtils.isLog(material, config)) {
             if (!PermissionUtils.hasVipBlock(player, playerConfig, config)) {
                 if (playerConfig.getDailyBlocksBroken() >= config.getMaxBlocksPerDay()) {
                     EffectUtils.sendMaxBlockLimitReachedMessage(player, block, HIT_MAX_BLOCK_MESSAGE);
@@ -288,6 +287,7 @@ public class AutoTreeChop extends JavaPlugin implements Listener, CommandExecuto
                     return;
                 }
             }
+
             if (!PermissionUtils.hasVipUses(player, playerConfig, config) && playerConfig.getDailyUses() >= config.getMaxUsesPerDay()) {
                 BukkitTinyTranslations.sendMessage(player, HIT_MAX_USAGE_MESSAGE);
                 return;
