@@ -317,14 +317,13 @@ public class AutoTreeChop extends JavaPlugin implements Listener, CommandExecuto
             return;
         }
 
-        Player player = event.getPlayer();
-        UUID playerUUID = player.getUniqueId();
-
         // Check if player has permission to use the plugin
-        if (!player.hasPermission("autotreechop.use")) {
+        Player player = event.getPlayer();
+        if (!player.hasPermission("autotreechop.use") || !TreeChopUtils.isTool(player)) {
             return;
         }
 
+        UUID playerUUID = player.getUniqueId();
         PlayerConfig playerConfig = getPlayerConfig(playerUUID);
 
         if (event.isSneaking()) {
